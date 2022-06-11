@@ -1,4 +1,5 @@
 import { parseArgs } from './util/args.js';
+import {goUppper, goToFolder, listAllFiles} from './navigation/navigation.js'
 
 import path, { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
@@ -7,6 +8,8 @@ import { access, readdir, open, rename, rm } from 'fs/promises';
 import { createWriteStream, createReadStream } from 'fs';
 
 import os from 'os';
+import { createHash } from 'crypto';
+import { createBrotliDecompress, createBrotliCompress } from 'zlib';
 
 import readline from 'readline';
 
@@ -21,39 +24,11 @@ export const app = async () => {
 
   process.chdir(actualPath);
 
-  const up = () => {
-    if (actualPath !== root) {
-      actualPath = actualPath.split('\\');
-      actualPath.pop();
-      actualPath = actualPath.join('\\');
-      process.chdir(actualPath);
-    }
-    console.log(`You are currently in ${actualPath}`);
-  };
+  
 
-  const cd = (input) => {
-    const path = input.includes(root) ? input : join(actualPath, input);
-    access(path)
-      .then(() => {
-        actualPath = path;
-        process.chdir(actualPath);
-        console.log(`You are currently in ${actualPath}`);
-      })
-      .catch((err) => {
-        console.error(new Error('Operation failed'));
-        console.log(`You are currently in ${actualPath}`);
-      });
-  };
+  
 
-  const ls = async () => {
-    try {
-      await readdir(actualPath).then((files) => {
-        for (const file of files) console.log(file);
-      });
-    } catch (error) {
-      console.error(new Error('Operation failed'));
-    }
-  };
+  
 
   const cat = (pathFile) => {
     const input = createReadStream(pathFile, 'utf-8');
@@ -158,6 +133,54 @@ export const app = async () => {
     await remove(filePath);
   };
 
+  const calcHash = (value) => {
+    const hash = createHash('sha256');
+    const stream = createReadStream(value);
+
+    stream.on('error', () => {
+      console.log(new Error('FS operation failed'));
+    });
+    stream.on('data', (data) => {
+      const result = hash.update(data).digest('hex');
+      console.log(result);
+    });
+    stream.on('end', () => {
+      console.log(`You are currently in ${actualPath}`);
+    });
+  };
+
+  const compress = (value) => {
+    let inputFile;
+    let outputFile;
+
+    [inputFile, outputFile] = value.split(' ');
+    const readStream = createReadStream(inputFile);
+    const writeStream = createWriteStream(outputFile);
+
+    const brotli = createBrotliCompress();
+    const stream = readStream.pipe(brotli).pipe(writeStream);
+
+    stream.on('finish', () => {
+      console.log(`You are currently in ${process.cwd()}`);
+    });
+  };
+
+  const decompress = (value) => {
+    let inputFile;
+    let outputFile;
+
+    [inputFile, outputFile] = value.split(' ');
+    const readStream = createReadStream(inputFile);
+    const writeStream = createWriteStream(outputFile);
+
+    const brotli = createBrotliDecompress();
+    const stream = readStream.pipe(brotli).pipe(writeStream);
+
+    stream.on('finish', () => {
+      console.log(`You are currently in ${process.cwd()}`);
+    });
+  };
+
   const osOperations = (value) => {
     let operation = value.slice(2);
 
@@ -207,15 +230,15 @@ export const app = async () => {
 
       switch (operation) {
         case 'up':
-          up();
+          goUppper();
           break;
 
         case 'cd':
-          cd(args);
+          goToFolder(args);
           break;
 
         case 'ls':
-          ls();
+          listAllFiles();
           break;
 
         case 'cat':
@@ -246,10 +269,25 @@ export const app = async () => {
           osOperations(args);
           break;
 
+        case 'hash':
+          calcHash(args);
+          break;
+
+        case 'compress':
+          compress(args);
+          break;
+
+        case 'decompress':
+          decompress(args);
+          break;
+
         case '.exit':
           console.log(goodbye);
           rl.close(actualPath);
           break;
+
+        default:
+          console.log(new Error('Invalid input'));
       }
     });
 
