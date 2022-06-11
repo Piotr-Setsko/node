@@ -146,7 +146,7 @@ export const app = async () => {
     } catch (error) {
       console.log(new Error('FS operation failed'));
     }
-  }
+  };
 
   const move = async (value) => {
     let filePath;
@@ -156,6 +156,36 @@ export const app = async () => {
 
     await copy(value);
     await remove(filePath);
+  };
+
+  const osOperations = (value) => {
+    let operation = value.slice(2);
+
+    switch (operation) {
+      case 'EOL':
+        console.log(JSON.stringify(os.EOL));
+        break;
+
+      case 'cpus':
+        console.log(`Overall amount of CPUs: ${os.cpus().length}`);
+        console.log(os.cpus().map((item) => item.model));
+        break;
+
+      case 'homedir':
+        console.log(os.homedir());
+        break;
+
+      case 'username':
+        console.log(os.userInfo().username);
+        break;
+
+      case 'architecture':
+        console.log(os.arch());
+        break;
+
+      default:
+        console.log(new Error('Invalid input'));
+    }
   };
 
   if (userName) {
@@ -210,6 +240,10 @@ export const app = async () => {
 
         case 'rm':
           remove(args);
+          break;
+
+        case 'os':
+          osOperations(args);
           break;
 
         case '.exit':
