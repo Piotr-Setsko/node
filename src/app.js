@@ -85,17 +85,19 @@ export const app = async () => {
           break;
 
         case 'compress':
-          if (args.split(' ') == 2) {
+          if (args && args.split(' ').length == 2) {
             compress(args);
+          } else {
+            console.log(new Error('Invalid input'));
           }
-          console.log(new Error('Invalid input'));
           break;
 
         case 'decompress':
-          if (args.split(' ') == 2) {
+          if (args && args.split(' ').length == 2) {
             decompress(args);
+          } else {
+            console.log(new Error('Invalid input'));
           }
-          console.log(new Error('Invalid input'));
 
           break;
 
