@@ -1,33 +1,45 @@
+import path from 'path';
+import { access, readdir } from 'fs/promises';
+
 export const goUppper = () => {
+  let actualPath = process.cwd();
+  const root = actualPath.split(path.sep)[0];
+
   if (actualPath !== root) {
     actualPath = actualPath.split('\\');
     actualPath.pop();
     actualPath = actualPath.join('\\');
-    process.chdir(actualPath);
   }
-  console.log(`You are currently in ${actualPath}`);
+  process.chdir(actualPath);
+
+  console.log(`You are currently in ${process.cwd()} \n`);
 };
 
 export const goToFolder = (input) => {
-  const path = input.includes(root) ? input : join(actualPath, input);
-  access(path)
+  let actualPath = process.cwd();
+  const filePath = path.isAbsolute(input)
+    ? input
+    : path.join(actualPath, input);
+
+  access(filePath)
     .then(() => {
-      actualPath = path;
+      actualPath = filePath;
       process.chdir(actualPath);
-      console.log(`You are currently in ${actualPath}`);
+      console.log(`You are currently in ${process.cwd()} \n`);
     })
     .catch((err) => {
-      console.error(new Error('Operation failed'));
-      console.log(`You are currently in ${actualPath}`);
+      console.error(new Error('Operation failed: no such path or directory exists'));
+      console.log(`You are currently in ${process.cwd()} \n`);
     });
 };
 
 export const listAllFiles = async () => {
+  let actualPath = process.cwd();
   try {
     await readdir(actualPath).then((files) => {
-      for (const file of files) console.log(file);
+      console.log(files)
     });
   } catch (error) {
-    console.error(new Error('Operation failed'));
+    console.log(new Error('Operation failed'));
   }
 };
