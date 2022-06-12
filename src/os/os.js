@@ -5,7 +5,7 @@ export const osOperations = (value) => {
 
     switch (operation) {
       case 'EOL':
-        console.log(JSON.stringify(os.EOL) + '\n');
+        console.log('default system End-Of-Line: ' + JSON.stringify(os.EOL) + '\n');
         console.log(`You are currently in ${process.cwd()} \n`);
         break;
 
@@ -20,17 +20,17 @@ export const osOperations = (value) => {
         break;
 
       case 'homedir':
-        console.log(os.homedir() + '\n');
+        console.log('Home directory: ' + os.homedir() + '\n');
         console.log(`You are currently in ${process.cwd()} \n`);
         break;
 
       case 'username':
-        console.log(os.userInfo().username + '\n');
+        console.log('Current system user name: ' + os.userInfo().username + '\n');
         console.log(`You are currently in ${process.cwd()} \n`);
         break;
 
       case 'architecture':
-        console.log(os.arch() + '\n');
+        console.log('CPU architecture: ' + os.arch() + '\n');
         console.log(`You are currently in ${process.cwd()} \n`);
         break;
 
